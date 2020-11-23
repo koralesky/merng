@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const { UserInputError } = require("apollo-server");
 
 // const { SECRET_KEY } = require();
+const { validateRegisterInput } = require("../../util/validators");
 const User = require("../../models/User");
 const SECRET_KEY = process.env.SECRET_KEY;
 
@@ -10,13 +11,21 @@ module.exports = {
   Mutation: {
     async register(
       parent,
-      { registerInput: { username, email, password, confirmpassword } },
-      context,
-      info
+      { registerInput: { username, email, password, confirmpassword } }
     ) {
-      // TODO: Validate user data
+      // Validate user data
+      const { valid, errors } = validateRegisterInput(
+        username,
+        email,
+        password,
+        confirmpassword
+      );
+
+      if (!valid) {
+        throw new UserInputError("Errors", { errors });
+      }
+
       // TODO: Make sure user doesn't already exist
-      // TODO: hash password and create an auth token
 
       const user = await User.findOne({ username });
 
@@ -28,6 +37,7 @@ module.exports = {
         });
       }
 
+      //hash password and create an auth token
       password = await bcrypt.hash(password, 12);
 
       const newUser = new User({
