@@ -8,6 +8,7 @@ const dbConnection = process.env.DB_CONNECTION;
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  context: ({ req }) => ({ req }),
 });
 
 mongoose
